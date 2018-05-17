@@ -20,8 +20,12 @@ temp <- read.csv("cityncode.csv")
 code <- temp[, "code"]
 city <- temp[, "city"]
 
+#promotion IDs
+promote <- read.csv("promote.csv", header = FALSE)
+promote["prob"] <- promote[,3] / sum(promote[,3])  
+
 #generate users
-num <- 4
+num <- 30
 ldply  (sample(c("m", "f"), num, replace = TRUE),
         .fun = function(sex){
           fn <- sample(with(dat, Firstname[name1 == sex]), 1)
@@ -54,6 +58,10 @@ apply(users,
          sapply(macros,
                 USE.NAMES = FALSE,
                 FUN = function(s) {
+                  s <- gsub("promIDuser", sample(promote[, 2], 
+                                                 1, 
+                                                 replace = TRUE, 
+                                                 prob = promote[, "prob"]), s)
                   s <- gsub("sample@mail.net", u[2], s)
                   s <- gsub("john<SP>doe", gsub(" ", "<SP>", u[1]), s)
                   s <- gsub("kyiv", u[3], s)
