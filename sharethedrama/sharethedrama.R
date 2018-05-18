@@ -24,53 +24,69 @@ city <- temp[, "city"]
 promote <- read.csv("promote.csv", header = FALSE)
 promote["prob"] <- promote[,3] / sum(promote[,3])  
 
-#generate users
-num <- 30
-ldply  (sample(c("m", "f"), num, replace = TRUE),
-        .fun = function(sex){
-          fn <- sample(with(dat, Firstname[name1 == sex]), 1)
-          ln <- sample(with(dat, Lastname[name2 == sex | name2 == "u" ]), 1)
-          email <- paste0(tolower(fn),
-                          sample(c("10":"23",
-                                   "88":"99", 
-                                   rep(paste0(c("", "-"), 
-                                              substr(tolower(ln), 1, sample(3:nchar(ln), 1))), 
-                                       10)),
-                                 1),
-                          "@",
-                          sample(c("ukr.net", "i.ua", "email.ua", "mail.ua", "yandex.ua"), 1))
-          phone <- sprintf("+38(0%d)%03d-%03d-%02d", 
-                           sample(code, 1),
-                           sample(1:1000, 1),
-                           sample(1:100, 1),
-                           sample(1:100, 1))
-          city <- sample(as.character(city), 1)
-          return(c(paste(fn, ln), email, city, phone))
-        }) -> users
 
-#get the macros
-macros <- scan(file = "sample.iim", what = character(), sep = "\n")
 
-#process all users
-apply(users,
-      1,
-       FUN = function(u){
-         sapply(macros,
-                USE.NAMES = FALSE,
-                FUN = function(s) {
-                  s <- gsub("promIDuser", sample(promote[, 2], 
-                                                 1, 
-                                                 replace = TRUE, 
-                                                 prob = promote[, "prob"]), s)
-                  s <- gsub("sample@mail.net", u[2], s)
-                  s <- gsub("john<SP>doe", gsub(" ", "<SP>", u[1]), s)
-                  s <- gsub("kyiv", u[3], s)
-                  s <- gsub("38phone", u[4], s)
-                })
-         }) -> script
+createScript <- function(num = 200, filename = as.character(num)) {
+  #generate users
+  ldply  (sample(c("m", "f"), num, replace = TRUE),
+          .fun = function(sex){
+            fn <- sample(with(dat, Firstname[name1 == sex]), 1)
+            ln <- sample(with(dat, Lastname[name2 == sex | name2 == "u" ]), 1)
+            email <- paste0(tolower(fn),
+                            sample(c("10":"23",
+                                     "88":"99", 
+                                     rep(paste0(c("", "-"), 
+                                                substr(tolower(ln), 1, sample(3:nchar(ln), 1))), 
+                                         10)),
+                                   1),
+                            "@",
+                            sample(c("ukr.net", "i.ua", "email.ua", "mail.ua", "yandex.ua"), 1))
+            phone <- sprintf("+38(0%d)%03d-%03d-%02d", 
+                             sample(code, 1),
+                             sample(1:1000, 1),
+                             sample(1:100, 1),
+                             sample(1:100, 1))
+            city <- sample(as.character(city), 1)
+            return(c(paste(fn, ln), email, city, phone))
+          }) -> users
+  
+  #get the macros
+  macros <- scan(file = "sample.iim", what = character(), sep = "\n")
+  
+  #process all users
+  apply(users,
+        1,
+        FUN = function(u){
+          sapply(macros,
+                 USE.NAMES = FALSE,
+                 FUN = function(s) {
+                   s <- gsub("promIDuser", sample(promote[, 2], 
+                                                  1, 
+                                                  replace = TRUE, 
+                                                  prob = promote[, "prob"]), s)
+                   s <- gsub("sample@mail.net", u[2], s)
+                   s <- gsub("john<SP>doe", gsub(" ", "<SP>", u[1]), s)
+                   s <- gsub("kyiv", u[3], s)
+                   s <- gsub("38phone", u[4], s)
+                 })
+        }) -> script
+  
+  write(as.vector(script), sprintf("pack%s.iim", filename)) 
+  
+  #write log
+  oldUsers <- read.csv("log.txt", header = FALSE)
+  write.csv(rbind(oldUsers, users), "log.txt", row.names = FALSE)
+  
+  sprintf("pack%s.iim", filename)
+}
 
-write(as.vector(script), "difference.iim") 
+manyScripts <- function(df) {
+  apply(df,
+        1,
+        FUN = function(x) {
+          createScript(x[1], x[2])
+        })
+}
 
-#write log
-oldUsers <- read.csv("log.txt", header = FALSE)
-write.csv(rbind(oldUsers, users), "log.txt", row.names = FALSE)
+manyScripts(data.frame(n = c(360, 360, 720, 720, 2000),
+                       s = c("1hour-1", "1hour-2", "2hour-1", "2hour-2", "5hour")))
