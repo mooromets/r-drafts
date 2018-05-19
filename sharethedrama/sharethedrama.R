@@ -89,6 +89,6 @@ manyScripts <- function(df) {
 }
 
 createPack <- function() {
-  manyScripts(data.frame(n = c(360, 360, 360, 360, 360, 720, 720, 720, 2000),
+  manyScripts(data.frame(n = c(rep(900, 5), rep(1800, 3), 4500),
                          s = c("1hour-1", "1hour-2", "1hour-3", "1hour-4", "1hour-5", "2hour-1", "2hour-2", "2hour-3", "5hour")))
 }
