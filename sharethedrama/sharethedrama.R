@@ -32,11 +32,11 @@ createScript <- function(num = 200, filename = as.character(num)) {
           .fun = function(sex){
             fn <- sample(with(dat, Firstname[name1 == sex]), 1)
             ln <- sample(with(dat, Lastname[name2 == sex | name2 == "u" ]), 1)
-            email <- paste0(tolower(fn),
+            email <- paste0(tolower(ln),
                             sample(c("10":"23",
                                      "88":"99", 
                                      rep(paste0(c("", "-"), 
-                                                substr(tolower(ln), 1, sample(3:nchar(ln), 1))), 
+                                                substr(tolower(fn), 1, sample(3:nchar(fn), 1))), 
                                          10)),
                                    1),
                             "@",
@@ -88,5 +88,7 @@ manyScripts <- function(df) {
         })
 }
 
-manyScripts(data.frame(n = c(360, 360, 720, 720, 2000),
-                       s = c("1hour-1", "1hour-2", "2hour-1", "2hour-2", "5hour")))
+createPack <- function() {
+  manyScripts(data.frame(n = c(360, 360, 360, 360, 360, 720, 720, 720, 2000),
+                         s = c("1hour-1", "1hour-2", "1hour-3", "1hour-4", "1hour-5", "2hour-1", "2hour-2", "2hour-3", "5hour")))
+}
