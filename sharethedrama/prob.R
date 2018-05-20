@@ -1,5 +1,5 @@
-users <- 537000
-points <- 4300
+users <- 650000
+points <- 7900
 
 sinp <- points/users
 cat("sinlge prob", sinp, "\n")

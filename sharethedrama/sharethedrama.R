@@ -92,3 +92,10 @@ createPack <- function() {
   manyScripts(data.frame(n = c(rep(900, 5), rep(1800, 3), 4500),
                          s = c("1hour-1", "1hour-2", "1hour-3", "1hour-4", "1hour-5", "2hour-1", "2hour-2", "2hour-3", "5hour")))
 }
+
+createAndRun <- function(n, size = 1000) {
+  lapply(1:n, 
+         FUN = function(x) {
+           shell(paste("start", createScript(as.character(x + size))))
+         })
+}
