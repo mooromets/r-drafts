@@ -32,7 +32,9 @@ createScript <- function(num = 200, filename = as.character(num)) {
           .fun = function(sex){
             fn <- sample(with(dat, Firstname[name1 == sex]), 1)
             ln <- sample(with(dat, Lastname[name2 == sex | name2 == "u" ]), 1)
-            email <- paste0(tolower(ln),
+            email <- paste0(sample(c("big", "huge", "sweet", "black", "white", "green", "gray", "grey", "pink", "blue", "red", "fun", "best", "fast", "win", "damn", "like", "good", "bad", "awesome", "golden", "foken", "little", "funny", "tiny", "simple", "common", "super", "upper", "top", "1st", "gen", "smart", "dumb", "gloom", "zed", "bunny", "dog", "fat"), 1),
+                            sample(c("", ".", "-", "_"), 1),
+                            tolower(ln),
                             sample(c("10":"23",
                                      "88":"99", 
                                      rep(paste0(c("", "-"), 
