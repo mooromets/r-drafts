@@ -26,6 +26,9 @@ mysel0 <- merge(mysel,
 
 plot(x = mysel0$date, y = mysel0$value, type = "l")
 
+
+Sys.setlocale("LC_ALL", "Russian_Russia")
+
 #october2010
 
 #my exp to the date
@@ -35,10 +38,11 @@ myExp <- mysel0[mysel0$date == last_recored, "totexp"] + as.integer(theDate - la
 
 expPrecision <- 0.2
   
-sal <- read.csv("./data/dou/2010_october_clean.csv")
-sal <- sal[,c(2, 4, 5)]
+sal <- read.csv("./data/dou/2010_october_clean.csv", encoding = "UTF-8")
+sal <- sal[,c(2, 4, 5)] 
 names(sal) <- c("exp", "lang", "sal")
 sal %>%
+  select()
   filter(lang == "C++" | lang == "C") %>%
   filter(between(exp, 
                  round(myExp * (1 - expPrecision), 1), 
@@ -57,18 +61,17 @@ myExp <- mysel0[mysel0$date == last_recored, "totexp"] + as.integer(theDate - la
 
 expPrecision <- 0.2
 
-sal <- read.csv("./data/dou/2011_may_final.csv")
-sal <- sal[,c(6, 10, 12)]
-names(sal) <- c("lang", "exp", "sal")
+sal <- read.csv("./data/dou/2011_may_final.csv", encoding = "UTF-8")
+sal <- sal[,c(6, 10, 12, 17)]
+names(sal) <- c("lang", "exp", "sal", "loc")
 sal$exp <- as.numeric(as.character(sal$exp))
 sal %>%
   filter((lang == "C++" | lang == "C")) %>%
   filter(between(exp, 
                  round(myExp * (1 - expPrecision), 1), 
                  round(myExp * (1 + expPrecision), 1))) %>%
+  filter(loc == "Киев")%>%
   select(sal) -> dat
 
 mean(dat$sal)
 median(dat$sal)
-
-
