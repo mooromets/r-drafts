@@ -59,7 +59,7 @@ expToDate <- function(date) {
 }
 
 
-calculateSal <- function(datafile) {
+calculateSal <- function(datafile, expFun = expToDate) {
   #get date from filename
   uspos <- gregexpr("_", datafile)
   
@@ -72,118 +72,54 @@ calculateSal <- function(datafile) {
   #read data from file
   sal <- read.csv(paste0("./data/dou/", datafile), encoding = "UTF-8")
   
-  #most common case
-  if (thisDate >= as.Date("2011-09-15")) {
+  #general data format case
+  if (thisDate >= as.Date("2011-01-15")) {
     names(sal)[which(names(sal) == "Язык.программирования")] <- "lang"
-    sal %>%
+    thisLoc = ifelse(thisDate == as.Date("2011-05-15"), "other", "Киев")
+    sal %>% 
       filterLang() %>%
-      filterExp(expVal = expToDate(thisDate)) %>%
-      filterCity() %>%
+      filterExp(expVal = expFun(thisDate)) %>%
+      filterCity(locs = thisLoc) %>%
       select(salary) -> dat
-    qua <- quantile(dat$sal, na.rm = TRUE)
-    data.frame(date = thisDate, p25 = qua[2], p50 = qua[3], p75 = qua[4])
+  } else {
+    #old data format
+    names(sal)[c(1, 2, 4, 5)] <- c("loc", "exp", "lang", "sal")
+    sal %>%
+      filterExp(expVal = expFun(thisDate)) %>%
+      filterCity(locs = "другой") %>%
+      select(sal) -> dat
   }
+  qua <- quantile(dat$sal, na.rm = TRUE)
+  data.frame(date = thisDate, p25 = qua[2], p50 = qua[3], p75 = qua[4])
+  
 }
 
 
 #files list
-fl <- dir("data/dou/")[10+3*(0:11)]
+fl <- dir("data/dou/")[c(1, 3, 7 + 3 * (0:10))]
 
-#get results
-do.call("rbind", lapply(fl[1:10], FUN = calculateSal))
+#get normal results
+salHist <- do.call("rbind", lapply(fl[1:13], FUN = calculateSal))
 
+#get extrapolated early years
+ey <- c("2008-12-15", "2009-05-15", "2009-12-15", "2010-05-15")
+do.call("rbind", lapply(ey, 
+                        FUN = function(x) {
+                          calculateSal(fl[1], expFun = function(y) expToDate(x))
+                        } ) ) ->
+  salExtra
+salExtra$date <- as.Date(ey)
+#TODO increase experince prec parameter in extrapolation calculations for
+#more acurate results
 
+#concat
+salFinal <- rbind(salHist, salExtra)
 
-#salary quantiles
-sq <- data.frame()
-dates <- c()
+#sort
+salFinal <- salFinal[order(salFinal$date), ]
 
-
-
-#october2010
-sal <- read.csv("./data/dou/2010_october_clean.csv", encoding = "UTF-8")
-names(sal)[c(1, 2, 4, 5)] <- c("loc", "exp", "lang", "sal")
-
-#extrapolate to early days
-
-#dec2008
-sal %>%
-  filterExp(expVal = expToDate("2008-12-15"), prec = .99) %>%
-  filterCity(locs = "другой") %>%
-  select(sal) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2008-12-15")
-
-#may2009
-sal %>%
-  filterExp(expVal = expToDate("2009-05-15"), prec = .5) %>%
-  filterCity(locs = "другой") %>%
-  select(sal) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2009-05-15")
-
-#dec2009
-sal %>%
-  filterExp(expVal = expToDate("2009-12-15")) %>%
-  filterCity(locs = "другой") %>%
-  select(sal) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2009-12-15")
-
-#may2010
-sal %>%
-  filterExp(expVal = expToDate("2010-05-15")) %>%
-  filterCity(locs = "другой") %>%
-  select(sal) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2010-05-15")
-
-
-#go ahead
-sal %>%
-  filterExp(expVal = expToDate("2010-10-15")) %>%
-  filterCity(locs = "другой") %>%
-  select(sal) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2010-10-15")
-
-
-
-#may2011
-sal <- read.csv("./data/dou/2011_may_final.csv", encoding = "UTF-8")
-names(sal)[which(names(sal) == "Язык.программирования")] <- "lang"
-sal %>%
-  filterRoleclass() %>%
-  filterExp(expVal = expToDate("2011-05-15")) %>%
-  filterCity(locs = "other") %>%
-  select(salary) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2011-05-15")
-
-#dec2011
-sal <- read.csv("./data/dou/2011_dec_final.csv", encoding = "UTF-8")
-names(sal)[which(names(sal) == "Язык.программирования")] <- "lang"
-sal %>%
-  filterLang() %>%
-  filterExp(expVal = expToDate("2011-12-15")) %>%
-  filterCity(locs = "Киев") %>%
-  select(salary) -> dat
-print(dim(dat))
-sq <- rbind(sq, print(quantile(dat$sal, na.rm = TRUE)))
-dates <- c(dates, "2011-12-15")
-
-# ... #
-
-sq["dates"] <- as.Date(dates)
-names(sq)[1:5] <- c("min", "p25", "med", "p75", "max")
-
+#plot
 plot(x = mysel0$date, y = mysel0$value, type = "l", lwd = 2)
-lines(x = sq$dates, y = sq$med, lwd = 2, col = "blue", lty = "dotted")
-lines(x = sq$dates, y = sq$p25, lwd = 2, col = "red", lty = "dashed")
-lines(x = sq$dates, y = sq$p75, lwd = 2, col = "green", lty = "longdash")
+lines(x = salFinal$date, y = salFinal$p50, lwd = 2, col = "blue", lty = "dotted")
+lines(x = salFinal$date, y = salFinal$p25, lwd = 2, col = "red", lty = "dashed")
+lines(x = salFinal$date, y = salFinal$p75, lwd = 2, col = "green", lty = "longdash")
