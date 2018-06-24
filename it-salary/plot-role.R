@@ -74,10 +74,9 @@ calculateSal <- function(datafile, expFun = expToDate) {
   
   #general data format case
   if (thisDate >= as.Date("2011-01-15")) {
-    names(sal)[which(names(sal) == "Язык.программирования")] <- "lang"
     thisLoc = ifelse(thisDate == as.Date("2011-05-15"), "other", "Киев")
     sal %>% 
-      filterLang() %>%
+      filterRoleclass() %>%
       filterExp(expVal = expFun(thisDate)) %>%
       filterCity(locs = thisLoc) %>%
       select(salary) -> dat
@@ -85,7 +84,6 @@ calculateSal <- function(datafile, expFun = expToDate) {
     #old data format
     names(sal)[c(1, 2, 4, 5)] <- c("loc", "exp", "lang", "sal")
     sal %>%
-      #filterLang() %>%
       filterExp(expVal = expFun(thisDate)) %>%
       filterCity(locs = "другой") %>%
       select(sal) -> dat
