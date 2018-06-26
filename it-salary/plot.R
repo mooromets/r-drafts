@@ -59,7 +59,7 @@ expToDate <- function(date) {
 }
 
 
-calculateSal <- function(datafile, expFun = expToDate) {
+calculateSal <- function(datafile, expFun = expToDate, byRole = FALSE) {
   #get date from filename
   uspos <- gregexpr("_", datafile)
   
@@ -76,8 +76,13 @@ calculateSal <- function(datafile, expFun = expToDate) {
   if (thisDate >= as.Date("2011-01-15")) {
     names(sal)[which(names(sal) == "Язык.программирования")] <- "lang"
     thisLoc = ifelse(thisDate == as.Date("2011-05-15"), "other", "Киев")
+    #prefilter on language OR role
+    if (byRole)
+      sal <- filterRoleclass(sal)
+    else
+      sal <- filterLang(sal)
+    #general filter
     sal %>% 
-      filterLang() %>%
       filterExp(expVal = expFun(thisDate)) %>%
       filterCity(locs = thisLoc) %>%
       select(salary) -> dat
@@ -85,7 +90,6 @@ calculateSal <- function(datafile, expFun = expToDate) {
     #old data format
     names(sal)[c(1, 2, 4, 5)] <- c("loc", "exp", "lang", "sal")
     sal %>%
-      #filterLang() %>%
       filterExp(expVal = expFun(thisDate)) %>%
       filterCity(locs = "другой") %>%
       select(sal) -> dat
@@ -107,8 +111,7 @@ ey <- c("2008-12-15", "2009-05-15", "2009-12-15", "2010-05-15")
 do.call("rbind", lapply(ey, 
                         FUN = function(x) {
                           calculateSal(fl[1], expFun = function(y) expToDate(x))
-                        } ) ) ->
-  salExtra
+                        } ) ) -> salExtra
 salExtra$date <- as.Date(ey)
 #TODO increase experince prec parameter in extrapolation calculations for
 #more acurate results
