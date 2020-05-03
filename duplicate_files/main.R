@@ -15,9 +15,9 @@ for(ext in extList) {
 }
 
 # !!! DROP already processed  folders
-extList <- c("F:\\\\video\\\\")
-for(ext in extList) {
-  df <- df[!grepl(ext, df$Name, ignore.case = TRUE),]  
+dropList <- c("F:\\\\video\\\\")
+for(drop in dropList) {
+  df <- df[!grepl(drop, df$Name, ignore.case = TRUE),]  
 }
 
 # add columns
@@ -25,7 +25,6 @@ df$FileName <- basename(df$Name)
 df$Dir <- dirname(df$Name)
 df$Modified <- dmy_hms(df$Date.Modified)
 df$Created <- dmy_hms(df$Date.Created)
-df$Size <- sub
 df$SizeMB[grepl("MB", df$Size)] <- 
   as.numeric( #a numeric is at the begining of the string
     sapply(
@@ -57,11 +56,9 @@ df_freq <-
     n = n()
   ) %>%
   arrange(desc(n))
-  
-# most frequent 
-#df_most_freq <-
-#  filter(df_freq, n > 3) %>%
-#  arrange(desc(n))
+
+#amount of space wasted (MB)
+(sum(df_freq$SizeMB*(df_freq$n-1)))
 
 # update freq column
 df <- left_join(df,
@@ -73,4 +70,6 @@ freq_dirs <- filter(df, n > 3) %>%
   summarize(
     nFiles = n(),
     sumSize = sum(SizeMB)
-  )
+  ) %>%
+  arrange(desc(sumSize))
+
