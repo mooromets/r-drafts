@@ -1,7 +1,7 @@
 require("lubridate")
 require("dplyr")
 
-df <- read.csv("./files.csv", as.is=TRUE)
+df <- read.csv("./files.csv", as.is=TRUE, encoding = "cp1251")
 
 # clean
 # remove all small files
@@ -15,22 +15,38 @@ for(ext in extList) {
 }
 
 # !!! DROP already processed  folders
-extList <- c("photo-video-0/2016 Fakel", "RT-N56U-5561/seagate")
+extList <- c("F:\\\\video\\\\")
 for(ext in extList) {
   df <- df[!grepl(ext, df$Name, ignore.case = TRUE),]  
 }
-
 
 # add columns
 df$FileName <- basename(df$Name)
 df$Dir <- dirname(df$Name)
 df$Modified <- dmy_hms(df$Date.Modified)
 df$Created <- dmy_hms(df$Date.Created)
-df$SizeMB[grepl("MB", df$Size)] <- as.numeric(sapply(strsplit(df$Size[grepl("MB", df$Size)], " "), "[[", 1))
-df$SizeMB[grepl("GB", df$Size)] <- 1024 * as.numeric(sapply(strsplit(df$Size[grepl("GB", df$Size)], " "), "[[", 1))
+df$Size <- sub
+df$SizeMB[grepl("MB", df$Size)] <- 
+  as.numeric( #a numeric is at the begining of the string
+    sapply(
+      strsplit( 
+        sub(",", #remove comma in a number 
+            "", 
+            df$Size[grepl("MB", df$Size)]), #data with 'MB' string
+        " "), 
+      "[[", 
+      1))
+df$SizeMB[grepl("GB", df$Size)] <- 
+  1024 * as.numeric(
+    sapply(
+      strsplit(
+        df$Size[grepl("GB", df$Size)], 
+        " "), 
+      "[[", 
+      1))
 
 # drop some columns
-df <- dplyr::select(df, -c(Name, Date.Modified, Date.Created, Size))
+df <- dplyr::select(df, -c(Date.Modified, Date.Created, Size))
 
 # EXPLORE
 
