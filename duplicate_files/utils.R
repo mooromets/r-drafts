@@ -22,3 +22,12 @@ cleanDir <- function(dir, data) {
   write.csv(tmpDF, csvName)
   (tmpDF)
 }
+
+#drop rows in data frame where rows contain processed dirs
+dropRows <- function(data) {
+  skip <- scan("skip.txt", what=character())
+  for(x in skip) {
+    data <- data[!grepl(x, data$Dir, ignore.case = TRUE),]
+  }
+  data
+}

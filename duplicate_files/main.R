@@ -14,12 +14,6 @@ for(ext in extList) {
   df <- df[!grepl(ext, df$Name, ignore.case = TRUE),]  
 }
 
-# !!! DROP already processed  folders
-dropList <- c("F:\\\\video\\\\")
-for(drop in dropList) {
-  df <- df[!grepl(drop, df$Name, ignore.case = TRUE),]  
-}
-
 # add columns
 df$FileName <- basename(df$Name)
 df$Dir <- dirname(df$Name)
