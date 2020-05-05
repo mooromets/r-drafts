@@ -6,7 +6,7 @@ fapply <- function (dir, data, func) {
   lapply(files, function(x) {
     fn <- basename(x)
     size <- round(file.size(x)/1024/1024, 2)
-    if (sum(data$FileName == fn & data$SizeMB == size) > 0) {
+    if (sum(data$FileName == fn & abs(data$SizeMB - size) < 0.02) > 0) {
       if (func(x))
         c(fn, size)
     } else
