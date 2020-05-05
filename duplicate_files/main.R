@@ -59,7 +59,7 @@ df <- left_join(df,
           df_freq,
           by = c("FileName", "SizeMB"))
 
-freq_dirs <- filter(df, n > 3) %>%
+freq_dirs <- filter(df, n > 1) %>%
   group_by(Dir) %>%
   summarize(
     nFiles = n(),
