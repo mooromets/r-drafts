@@ -1,7 +1,9 @@
 require("lubridate")
 require("dplyr")
 
-df <- read.csv("./files.csv", as.is=TRUE, encoding = "cp1251")
+Sys.setlocale("LC_CTYPE", "russian")
+
+df <- read.csv("./files.csv", as.is=TRUE, encoding = "utf-8")
 
 # clean
 # remove all small files
