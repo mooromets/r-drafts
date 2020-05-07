@@ -1,4 +1,5 @@
-require("./utils.R")
+source("./utils.R")
+source("./globals.R")
 
 dirNames <- c(
   
@@ -7,9 +8,9 @@ dirNames <- c(
 for (dirName in dirNames)
   cleanDir(dirName, df)
 
-# append dirNames to "skip.txt"
+# append dirNames to the skipped-dirs file
 # prorgammatically:
-write(paste0("\"", dirNames, "$\""), append = TRUE, file = "skip.txt")
+write(paste0("\"", dirNames, "$\""), append = TRUE, file = SKIP_DIR_FILE)
 #OR manually
 
 df <- dropRows(df)

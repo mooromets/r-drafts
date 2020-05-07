@@ -1,3 +1,5 @@
+source("./globals.R")
+
 require("dplyr")
 
 #apply a function on every file that exists in data 
@@ -19,13 +21,13 @@ cleanDir <- function(dir, data) {
   res <- fapply(dir, data, file.remove)
   tmpDF <- as.data.frame(do.call(rbind, res))
   csvName <- paste0(gsub("[:/]+", "-", dir), ".csv")
-  write.csv(tmpDF, csvName)
+  write.csv(tmpDF, csvName, fileEncoding = ENCODING)
   (tmpDF)
 }
 
 #drop rows in data frame where rows contain processed dirs
 dropRows <- function(data) {
-  skip <- scan("skip.txt", what=character())
+  skip <- scan(SKIP_DIR_FILE, what=character())
   for(x in skip) {
     data <- data[!grepl(x, data$Dir, ignore.case = TRUE),]
   }

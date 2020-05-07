@@ -1,9 +1,11 @@
+source("./globals.R")
+
 require("lubridate")
 require("dplyr")
 
-Sys.setlocale("LC_CTYPE", "russian")
+Sys.setlocale("LC_CTYPE", SYS_LOCALE_LANG)
 
-df <- read.csv("./files.csv", as.is=TRUE, encoding = "utf-8")
+df <- read.csv(INPUT_DATA_FILE, as.is=TRUE, encoding = ENCODING)
 
 # clean
 # remove all small files
@@ -68,4 +70,19 @@ freq_dirs <- filter(df, n > 1) %>%
     sumSize = sum(SizeMB)
   ) %>%
   arrange(desc(sumSize))
+
+# update dir name column
+df$dirName <- gsub("^.*/", "", df$Dir)
+
+# find good candidates to be exact:
+# dirs that have duplicate files and have the same name
+u_dirs <- unique(df$dirName)
+x <- lapply(u_dirs, 
+       function(dir){
+         idx <- grep(paste0("/",dir,"([/]|$)"), freq_dirs$Dir)
+         if (length(idx) > 1)
+            c(dir,freq_dirs$Dir[idx])
+       })
+#what for?
+#df$dirPathes <- apply(df, 1, function(x) {gsub(x["dirName"], "", x["Dir"])})
 
