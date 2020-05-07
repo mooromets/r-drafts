@@ -1,4 +1,5 @@
 source("./globals.R")
+source("./utils.R")
 
 require("lubridate")
 require("dplyr")
@@ -17,6 +18,9 @@ extList <- c("dll$", "exe$", "sys$", "tlb$", "admx$", "etl$", "cpl$", "mui$", "x
 for(ext in extList) {
   df <- df[!grepl(ext, df$Name, ignore.case = TRUE),]  
 }
+
+#drop dirs not existing anymore
+df <- dropRows(df)
 
 # add columns
 df$FileName <- basename(df$Name)
@@ -45,7 +49,8 @@ df$SizeMB[grepl("GB", df$Size)] <-
 # drop some columns
 df <- dplyr::select(df, -c(Date.Modified, Date.Created, Size))
 
-# EXPLORE
+# update dir name column
+df$dirName <- gsub("^.*/", "", df$Dir)
 
 # create frequecy table
 df_freq <-
@@ -72,17 +77,4 @@ freq_dirs <- filter(df, n > 1) %>%
   arrange(desc(sumSize))
 
 # update dir name column
-df$dirName <- gsub("^.*/", "", df$Dir)
-
-# find good candidates to be exact:
-# dirs that have duplicate files and have the same name
-u_dirs <- unique(df$dirName)
-x <- lapply(u_dirs, 
-       function(dir){
-         idx <- grep(paste0("/",dir,"([/]|$)"), freq_dirs$Dir)
-         if (length(idx) > 1)
-            c(dir,freq_dirs$Dir[idx])
-       })
-#what for?
-#df$dirPathes <- apply(df, 1, function(x) {gsub(x["dirName"], "", x["Dir"])})
-
+freq_dirs$dirName <- gsub("^.*/", "", freq_dirs$Dir)
