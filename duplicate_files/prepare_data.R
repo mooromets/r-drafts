@@ -11,22 +11,36 @@ df <- read.csv(INPUT_DATA_FILE, as.is=TRUE, encoding = ENCODING)
 # clean
 # remove all small files
 df <- df[!grepl("Bytes", df$Size),]
-df <- df[!grepl("KB", df$Size),]
+#df <- df[!grepl("KB", df$Size),]
 
 # remove system files
-extList <- c("dll$", "exe$", "sys$", "tlb$", "admx$", "etl$", "cpl$", "mui$", "xml$", "sdi$")
+extList <- c("dll$", "exe$", "sys$", "tlb$", "admx$", "etl$", "cpl$", "mui$", 
+             "xml$", "sdi$", ".db$", ".info$")
 for(ext in extList) {
   df <- df[!grepl(ext, df$Name, ignore.case = TRUE),]  
 }
 
 #drop dirs not existing anymore
-df <- dropRows(df)
+#df <- dropRows(df)
 
 # add columns
 df$FileName <- basename(df$Name)
 df$Dir <- dirname(df$Name)
 df$Modified <- dmy_hms(df$Date.Modified)
 df$Created <- dmy_hms(df$Date.Created)
+df$SizeMB[grepl("KB", df$Size)] <- 
+  round(
+    as.numeric( #a numeric is at the begining of the string
+      sapply(
+        strsplit( 
+          sub(",", #remove comma in a number 
+              "", 
+              df$Size[grepl("KB", df$Size)]), #data with 'MB' string
+          " "), 
+        "[[", 
+        1)) / 1024,
+  3)
+
 df$SizeMB[grepl("MB", df$Size)] <- 
   as.numeric( #a numeric is at the begining of the string
     sapply(
