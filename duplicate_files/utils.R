@@ -26,8 +26,8 @@ cleanDir <- function(dir, data) {
 }
 
 #drop rows in data frame where rows contain processed dirs
-dropRows <- function(data) {
-  skip <- scan(SKIP_DIR_FILE, what=character())
+dropRows <- function(data, skipFile = SKIP_DIR_FILE) {
+  skip <- scan(skipFile, what=character())
   for(x in skip) {
     data <- data[!grepl(x, data$Dir, ignore.case = TRUE),]
   }
