@@ -1,13 +1,32 @@
 source("./utils.R")
 source("./globals.R")
 
-dirNames <- c(
+
+#delete all duplicates from THESE dirs 
+applyOnDuplicates(
+  grep("4_no_name_2020", freq_dirs$Dir, value = TRUE),
+  df,
+  rmFile
 )
 
 applyOnDuplicates(
-  dirNames,
+  grep("3_sorted_no_name_2020", freq_dirs$Dir, value = TRUE),
   df,
   rmFile
+)
+
+applyOnDuplicates(
+  grep("2_unsorted_2020", freq_dirs$Dir, value = TRUE),
+  df,
+  rmFile
+)
+
+#delete all duplicates from OTHER dirs (and keep these)
+applyOnDuplicates(
+  grep("1_sorted_2020", freq_dirs$Dir, value = TRUE),
+  df,
+  rmFile,
+  left = FALSE
 )
 
 
