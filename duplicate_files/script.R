@@ -2,8 +2,16 @@ source("./utils.R")
 source("./globals.R")
 
 dirNames <- c(
-  
 )
+
+applyOnDuplicates(
+  dirNames,
+  df,
+  rmFile
+)
+
+
+### obsolete ?
 
 for (dirName in dirNames)
   cleanDir(dirName, df)
