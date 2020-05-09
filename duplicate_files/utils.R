@@ -1,6 +1,7 @@
 source("./globals.R")
 
 require("dplyr")
+require("tools")
 
 #TODO obsolete?
 #apply a function on every file that exists in data
@@ -79,4 +80,27 @@ rmFile <- function(file) {
     write(paste("NOT-FOUND", file), file=logFile, append=TRUE)
   }
   return (FALSE)
+}
+
+# list all files and their info in a directory recursively
+getAllFilesInfo <- function(path){
+  #obtain info
+  allFiles <- lapply(
+    list.files(path = path, 
+               include.dirs = FALSE, 
+               recursive = TRUE, 
+               full.names = TRUE), 
+    FUN = file.info)
+  
+  tmpDF <- as.data.frame(do.call(rbind, allFiles))
+  tmpDF <- tmpDF[complete.cases(tmpDF), ]
+  #rownames as s column
+  tmpDF <- cbind(path = rownames(tmpDF), tmpDF)
+  tmpDF$path <- as.character(tmpDF$path)
+  #int row names
+  rownames(tmpDF) <- 1:nrow(tmpDF)
+  tmpDF$filename <- basename(tmpDF$path)
+  #checksum - disabled in favour of performance
+  #tmpDF$md5 <- md5sum(tmpDF$path)
+  return (tmpDF)
 }

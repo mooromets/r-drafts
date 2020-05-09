@@ -29,6 +29,13 @@ applyOnDuplicates(
   left = FALSE
 )
 
+#find match from 2 dirs
+left <- getAllFilesInfo("F:/media/")
+right <- getAllFilesInfo("J:/CD-recovery/")
+dupl <- inner_join(left, right, by = c("filename", "size"))
+sapply(
+  dupl$path.y, 
+  rmFile)
 
 ### obsolete ?
 
