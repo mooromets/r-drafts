@@ -101,6 +101,25 @@ getAllFilesInfo <- function(path){
   rownames(tmpDF) <- 1:nrow(tmpDF)
   tmpDF$filename <- basename(tmpDF$path)
   #checksum - disabled in favour of performance
-  #tmpDF$md5 <- md5sum(tmpDF$path)
+  tmpDF$md5 <- md5sum(tmpDF$path)
   return (tmpDF)
+}
+
+
+#
+storeLargeSubdirsInfo <- function(path) {
+  dirs <- list.dirs(
+    path = path,
+    full.names = TRUE,
+    recursive = FALSE)
+
+  for (x in sample(dirs)) {
+    print(x)
+    print(Sys.time())
+    df <- getAllFilesInfo(path = x)
+    write.csv(
+      df,
+      paste0(x, ".csv"),
+      fileEncoding = ENCODING)
+  }
 }
