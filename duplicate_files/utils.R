@@ -107,19 +107,16 @@ getAllFilesInfo <- function(path){
 
 
 #
-storeLargeSubdirsInfo <- function(path) {
-  dirs <- list.dirs(
-    path = path,
-    full.names = TRUE,
-    recursive = FALSE)
-
-  for (x in sample(dirs)) {
+storeLargeDirInfo <- function(path) {
+  for (x in sample(path)) {
     print(x)
     print(Sys.time())
     df <- getAllFilesInfo(path = x)
+    print(Sys.time())
     write.csv(
       df,
-      paste0(x, ".csv"),
+      paste0(basename(x), ".csv"),
       fileEncoding = ENCODING)
+    print(Sys.time())
   }
 }
