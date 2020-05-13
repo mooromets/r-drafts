@@ -35,3 +35,14 @@ x <- lapply(u_dirs,
               if (length(idx) > 1)
                 cbind(dirName = dir, freq_dirs[idx, 1:3])
             }) %>% bind_rows()
+
+
+### with checksum
+df <- read.csv("all-files.csv", fileEncoding = "Windows-1251") #TODO fix encoding
+
+duplIdx <- duplicated(df[,"md5"])
+df_dupl <- df[duplIdx,]
+
+#drop zero files
+df <- df[df$size != 0, ]
+
