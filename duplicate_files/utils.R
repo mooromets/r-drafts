@@ -100,11 +100,25 @@ getAllFilesInfo <- function(path){
   #int row names
   rownames(tmpDF) <- 1:nrow(tmpDF)
   tmpDF$filename <- basename(tmpDF$path)
-  #checksum - disabled in favour of performance
-  tmpDF$md5 <- md5sum(tmpDF$path)
+  #checksum
+  tmpDF$md5 <- get_md5_with_progress(tmpDF$path)
   return (tmpDF)
 }
 
+get_md5_with_progress <- function (files){
+  filesLists <- split(files, ceiling(seq_along(files)/length(files)*20))
+  x <- c()
+  for(i in 1:length(filesLists)) {
+    x <- c(x, md5sum(filesLists[[i]]))
+    stopifnot(!is.na(x))
+    print(sprintf("%s : %d of %d files done (%d %%)",
+                  format(Sys.time(), "%X"),
+                  length(x),
+                  length(files),
+                  i*5))
+  }
+  return(x)
+}
 
 #
 storeLargeDirInfo <- function(path) {
@@ -112,7 +126,6 @@ storeLargeDirInfo <- function(path) {
     print(x)
     print(Sys.time())
     df <- getAllFilesInfo(path = x)
-    print(Sys.time())
     write.csv(
       df,
       paste0(basename(x), ".csv"),
