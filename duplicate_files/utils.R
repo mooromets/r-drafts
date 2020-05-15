@@ -83,7 +83,9 @@ rmFile <- function(file) {
 }
 
 # list all files and their info in a directory recursively
-getAllFilesInfo <- function(path){
+# path - a directory
+# oldFiles - data.frame from last scan (saves time for md5)
+getAllFilesInfo <- function(path, oldFiles = NULL){
   Sys.setlocale("LC_CTYPE", SYS_LOCALE_LANG) #needed here ?
   #obtain info
   allFiles <- lapply(
@@ -106,7 +108,15 @@ getAllFilesInfo <- function(path){
   rownames(tmpDF) <- 1:nrow(tmpDF)
   tmpDF$filename <- basename(tmpDF$path)
   #checksum
-  tmpDF$md5 <- get_md5_with_progress(tmpDF$path)
+  if (!is.null(oldFiles)) {
+    tmpDF$mtime <- as.character(tmpDF$mtime) # for joining on string time
+    df_join <- left_join(tmpDF, oldFiles, by = c("path", "mtime", "size"))
+    idxCalcMd5 <- is.na(df_join$md5)
+    if (sum(idxCalcMd5) > 0) {
+      tmpDF$md5[idxCalcMd5] <- get_md5_with_progress(tmpDF$path[idxCalcMd5])
+    }
+  } else
+    tmpDF$md5 <- get_md5_with_progress(tmpDF$path)
   return (tmpDF)
 }
 
@@ -128,11 +138,11 @@ get_md5_with_progress <- function (files){
 }
 
 #
-storeLargeDirInfo <- function(path) {
+storeLargeDirInfo <- function(path, oldFiles = NULL) {
   for (x in sample(path)) {
     print(x)
     print(Sys.time())
-    df <- getAllFilesInfo(path = x)
+    df <- getAllFilesInfo(path = x, oldFiles)
     write.csv(
       df,
       paste0(basename(x), ".csv"),
