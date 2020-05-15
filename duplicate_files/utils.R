@@ -84,6 +84,7 @@ rmFile <- function(file) {
 
 # list all files and their info in a directory recursively
 getAllFilesInfo <- function(path){
+  Sys.setlocale("LC_CTYPE", SYS_LOCALE_LANG) #needed here ?
   #obtain info
   allFiles <- lapply(
     list.files(path = path, 
@@ -93,7 +94,11 @@ getAllFilesInfo <- function(path){
     FUN = file.info)
   
   tmpDF <- as.data.frame(do.call(rbind, allFiles))
-  tmpDF <- tmpDF[complete.cases(tmpDF), ]
+  complIdx <- complete.cases(tmpDF)
+  if(!all(complIdx)) {
+    tmpDF <- tmpDF[complete.cases(tmpDF), ]
+    warning(sprintf("couldn't read file info for %d files", sum(!complIdx)))
+  }
   #rownames as s column
   tmpDF <- cbind(path = rownames(tmpDF), tmpDF)
   tmpDF$path <- as.character(tmpDF$path)
@@ -110,7 +115,9 @@ get_md5_with_progress <- function (files){
   x <- c()
   for(i in 1:length(filesLists)) {
     x <- c(x, md5sum(filesLists[[i]]))
-    stopifnot(!is.na(x))
+    if (sum(is.na(x)) > 0) {
+      stop(sprintf("MD5 couldn't be calculated for %d files", sum(!is.na(x))))
+    }
     print(sprintf("%s : %d of %d files done (%d %%)",
                   format(Sys.time(), "%X"),
                   length(x),
