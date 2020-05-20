@@ -23,6 +23,12 @@ df <- dplyr::select(df, -c(atime, isdir, mode, exe, X))
 # save clean data
 write.csv(df, DEF_DATA, fileEncoding = ENCODING)
 
+# skip some dirs
+df <- df[!grepl("keep_as_is", df$path, ignore.case = TRUE),]
+#drop zero files
+df <- df[df$size != 0, ]
+
+
 # create frequecy table
 df_freq <-
   group_by(df, md5, size) %>%
